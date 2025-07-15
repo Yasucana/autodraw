@@ -28,6 +28,7 @@ class AbstractApp:
             "Style E": [("strokes", 30)],
             "Style F": [("dots", 150)],
             "Style G": [("doodles", 50)],
+            "Style H": [("segments", 40)],
         }
 
         for style, params in style_configs.items():
@@ -71,6 +72,8 @@ class AbstractApp:
                 self.draw_dot_spiral(**params)
             elif style == "Style G":
                 self.draw_psychedelic_doodles(**params)
+            elif style == "Style H":
+                self.draw_golden_spiral(**params)
 
         self.display_image()
 
@@ -148,6 +151,19 @@ class AbstractApp:
                 dx = random.randint(-radius, radius)
                 dy = random.randint(-radius, radius)
                 self.draw.line([(x, y), (x + dx, y + dy)], fill=color, width=2)
+
+    def draw_golden_spiral(self, segments=40):
+        phi = (1 + math.sqrt(5)) / 2
+        center = (WIDTH / 2, HEIGHT / 2)
+        angle = 0.0
+        radius = 5
+        for _ in range(segments):
+            x = center[0] + radius * math.cos(angle)
+            y = center[1] + radius * math.sin(angle)
+            color = tuple(random.choices(range(256), k=3))
+            self.draw.ellipse([x - 3, y - 3, x + 3, y + 3], fill=color)
+            angle += math.pi / 8  # small increment
+            radius *= phi ** (1 / 8)
 
     def display_image(self):
         self.tk_image = ImageTk.PhotoImage(self.image)

@@ -10,6 +10,7 @@ Simple tool to generate abstract drawings in various styles.
 - **Style E:** Abstract Expressionism
 - **Style F:** Dot Spiral
 - **Style G:** Psychedelic Doodles
+- **Style H:** Golden Spiral (points follow the golden ratio)
 
 ## Usage
 
@@ -26,6 +27,7 @@ and adjust the values to change how many elements are drawn.
 | Style E | `strokes` |
 | Style F | `dots` |
 | Style G | `doodles` |
+| Style H | `segments` |
 
 Press **Generate** to render the selected styles in order. Use **Save** to
 export the image as a PNG file.
