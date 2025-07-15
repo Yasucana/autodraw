@@ -13,18 +13,34 @@ class AbstractApp:
         self.canvas = tk.Canvas(root, width=WIDTH, height=HEIGHT, bg="white")
         self.canvas.pack()
 
-        self.style_var = tk.StringVar(value="Style A")
-        tk.OptionMenu(
-            root,
-            self.style_var,
-            "Style A",
-            "Style B",
-            "Style C",
-            "Style D",
-            "Style E",
-            "Style F",
-            "Style G",
-        ).pack(side=tk.LEFT, padx=5)
+        # style selection and parameter controls
+        control_frame = tk.Frame(root)
+        control_frame.pack(side=tk.LEFT, padx=5)
+
+        self.style_vars = {}
+        self.param_vars = {}
+
+        style_configs = {
+            "Style A": [("steps", 40), ("line_width", 1)],
+            "Style B": [("polygons", 20)],
+            "Style C": [("shapes", 15)],
+            "Style D": [("layers", 6)],
+            "Style E": [("strokes", 30)],
+            "Style F": [("dots", 150)],
+            "Style G": [("doodles", 50)],
+        }
+
+        for style, params in style_configs.items():
+            self.style_vars[style] = tk.BooleanVar()
+            self.param_vars[style] = {}
+            row = tk.Frame(control_frame)
+            row.pack(anchor="w")
+            tk.Checkbutton(row, text=style, variable=self.style_vars[style]).pack(side=tk.LEFT)
+            for name, default in params:
+                var = tk.IntVar(value=default)
+                self.param_vars[style][name] = var
+                tk.Label(row, text=name).pack(side=tk.LEFT)
+                tk.Entry(row, textvariable=var, width=5).pack(side=tk.LEFT)
 
         tk.Button(root, text="Generate", command=self.generate).pack(side=tk.LEFT, padx=5)
         tk.Button(root, text="Save", command=self.save_image).pack(side=tk.LEFT, padx=5)
@@ -36,40 +52,41 @@ class AbstractApp:
         self.image = Image.new("RGB", (WIDTH, HEIGHT), "white")
         self.draw = ImageDraw.Draw(self.image)
 
-        style = self.style_var.get()
         self.canvas.delete("all")
 
-        if style == "Style A":
-            self.draw_geometric_lines()
-        elif style == "Style B":
-            self.draw_colored_polygons()
-        elif style == "Style C":
-            self.draw_modern_tribal()
-        elif style == "Style D":
-            self.draw_mandala()
-        elif style == "Style E":
-            self.draw_abstract_expressionism()
-        elif style == "Style F":
-            self.draw_dot_spiral()
-        elif style == "Style G":
-            self.draw_psychedelic_doodles()
+        selected_styles = [s for s, v in self.style_vars.items() if v.get()]
+        for style in selected_styles[:3]:
+            params = {name: var.get() for name, var in self.param_vars[style].items()}
+            if style == "Style A":
+                self.draw_geometric_lines(**params)
+            elif style == "Style B":
+                self.draw_colored_polygons(**params)
+            elif style == "Style C":
+                self.draw_modern_tribal(**params)
+            elif style == "Style D":
+                self.draw_mandala(**params)
+            elif style == "Style E":
+                self.draw_abstract_expressionism(**params)
+            elif style == "Style F":
+                self.draw_dot_spiral(**params)
+            elif style == "Style G":
+                self.draw_psychedelic_doodles(**params)
 
         self.display_image()
 
-    def draw_geometric_lines(self):
-        steps = 40
+    def draw_geometric_lines(self, steps=40, line_width=1):
         for i in range(steps):
-            self.draw.line([(0, i * HEIGHT // steps), (i * WIDTH // steps, HEIGHT)], fill="black", width=1)
-            self.draw.line([(WIDTH, i * HEIGHT // steps), (WIDTH - i * WIDTH // steps, HEIGHT)], fill="black", width=1)
+            self.draw.line([(0, i * HEIGHT // steps), (i * WIDTH // steps, HEIGHT)], fill="black", width=line_width)
+            self.draw.line([(WIDTH, i * HEIGHT // steps), (WIDTH - i * WIDTH // steps, HEIGHT)], fill="black", width=line_width)
 
-    def draw_colored_polygons(self):
-        for _ in range(20):
+    def draw_colored_polygons(self, polygons=20):
+        for _ in range(polygons):
             points = [(random.randint(0, WIDTH), random.randint(0, HEIGHT)) for _ in range(4)]
             color = tuple(random.choices(range(256), k=3))
             self.draw.polygon(points, fill=color, outline="black")
 
-    def draw_modern_tribal(self):
-        for _ in range(15):
+    def draw_modern_tribal(self, shapes=15):
+        for _ in range(shapes):
             x = random.randint(0, WIDTH)
             y = random.randint(0, HEIGHT)
             r = random.randint(20, 80)
@@ -84,9 +101,8 @@ class AbstractApp:
                 dy = random.randint(0, r // 2)
                 self.draw.ellipse([x + dx - 2, y + dy - 2, x + dx + 2, y + dy + 2], fill=color)
 
-    def draw_mandala(self):
+    def draw_mandala(self, layers=6):
         center = (WIDTH // 2, HEIGHT // 2)
-        layers = 6
         for layer in range(1, layers + 1):
             radius = layer * 40
             color = tuple(random.choices(range(256), k=3))
@@ -97,8 +113,8 @@ class AbstractApp:
                 y = center[1] + radius * math.sin(angle)
                 self.draw.ellipse([x - 10, y - 10, x + 10, y + 10], fill=color)
 
-    def draw_abstract_expressionism(self):
-        for _ in range(30):
+    def draw_abstract_expressionism(self, strokes=30):
+        for _ in range(strokes):
             x1, y1 = random.randint(0, WIDTH), random.randint(0, HEIGHT)
             x2, y2 = random.randint(0, WIDTH), random.randint(0, HEIGHT)
             color = tuple(random.choices(range(256), k=3))
@@ -108,10 +124,10 @@ class AbstractApp:
                 drip_len = random.randint(10, 60)
                 self.draw.line([(x2, y2), (x2, y2 + drip_len)], fill=color, width=max(1, width - 3))
 
-    def draw_dot_spiral(self):
+    def draw_dot_spiral(self, dots=150):
         center = (WIDTH / 2, HEIGHT / 2)
         angle = 0
-        for i in range(150):
+        for i in range(dots):
             radius = i * 2
             angle += 0.3
             x = center[0] + radius * math.cos(angle)
@@ -119,8 +135,8 @@ class AbstractApp:
             color = tuple(random.choices(range(256), k=3))
             self.draw.ellipse([x - 2, y - 2, x + 2, y + 2], fill=color)
 
-    def draw_psychedelic_doodles(self):
-        for _ in range(50):
+    def draw_psychedelic_doodles(self, doodles=50):
+        for _ in range(doodles):
             x = random.randint(0, WIDTH)
             y = random.randint(0, HEIGHT)
             radius = random.randint(20, 100)
